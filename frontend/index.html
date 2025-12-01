@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participant Label Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .radio-option label:hover {
+            border-color: #667eea;
+        }
+
+        .radio-label-detail {
+            display: block;
+            font-size: 0.85em;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .result-box h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+
+        .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .radio-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🏷️ Label Generator</h1>
+                <p>Generate printable participant labels with barcodes or QR codes</p>
+            </div>
+
+            <!-- Alert Messages -->
+            <div v-if="alert.show" :class="['alert', `alert-${alert.type}`]">
+                {{ alert.message }}
+            </div>
+
+            <!-- Form -->
+            <form @submit.prevent="generateLabels">
+                <!-- Code Range -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="startCode">Start Code *</label>
+                        <input 
+                            type="number" 
+                            id="startCode"
+                            v-model.number="form.startCode"
+                            required
+                            min="0"
+                            max="999999"
+                            placeholder="e.g., 10001"
+                        >
+                        <div class="help-text">Starting participant number</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endCode">End Code *</label>
+                        <input 
+                            type="number" 
+                            id="endCode"
+                            v-model.number="form.endCode"
+                            required
+                            min="0"
+                            max="999999"
+                            placeholder="e.g., 10500"
+                        >
+                        <div class="help-text">Ending participant number</div>
+                    </div>
+                </div>
+
+                <!-- Prefix and Suffix -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="prefix">Prefix (Optional)</label>
+                        <input 
+                            type="text" 
+                            id="prefix"
+                            v-model="form.prefix"
+                            maxlength="20"
+                            placeholder="e.g., DENGUE-"
+                        >
+                        <div class="help-text">Text before the code number</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="suffix">Suffix (Optional)</label>
+                        <input 
+                            type="text" 
+                            id="suffix"
+                            v-model="form.suffix"
+                            maxlength="20"
+                            placeholder="e.g., -2025"
+                        >
+                        <div class="help-text">Text after the code number</div>
+                    </div>
+                </div>
+
+                <!-- Code Type -->
+                <div class="form-group">
+                    <label>Code Type *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="barcode" 
+                                value="barcode" 
+                                v-model="form.codeType"
+                            >
+                            <label for="barcode">
+                                📊 Barcode
+                                <span class="radio-label-detail">Code128 format</span>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="qrcode" 
+                                value="qrcode" 
+                                v-model="form.codeType"
+                            >
+                            <label for="qrcode">
+                                📱 QR Code
+                                <span class="radio-label-detail">Smartphone scannable</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Label Format -->
+                <div class="form-group">
+                    <label>Label Format *</label>
+                    <div class="radio-group">
+                        <div class="radio-option" v-for="format in formats" :key="format.id">
+                            <input 
+                                type="radio" 
+                                :id="format.id" 
+                                :value="format.id" 
+                                v-model="form.labelFormat"
+                            >
+                            <label :for="format.id">
+                                {{ format.name }}
+                                <span class="radio-label-detail">{{ format.labels_per_sheet }} labels/sheet</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page Size -->
+                <div class="form-group">
+                    <label>Page Size *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="letter" 
+                                value="letter" 
+                                v-model="form.pageSize"
+                            >
+                            <label for="letter">
+                                📄 US Letter
+                                <span class="radio-label-detail">8.5" × 11"</span>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input 
+                                type="radio" 
+                                id="a4" 
+                                value="a4" 
+                                v-model="form.pageSize"
+                            >
+                            <label for="a4">
+                                📄 A4
+                                <span class="radio-label-detail">210mm × 297mm</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div v-if="previewCode" class="result-box">
+                    <h3>Preview</h3>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 8px;">
+                        <strong style="font-size: 1.2em; color: #667eea;">{{ previewCode }}</strong>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="btn btn-primary"
+                    :disabled="loading"
+                >
+                    <span v-if="loading" class="loading"></span>
+                    <span v-else>🎯 Generate Labels</span>
+                </button>
+            </form>
+
+            <!-- Result -->
+            <div v-if="result" class="result-box">
+                <h3>✅ Generation Successful!</h3>
+                <div class="result-item">
+                    <span class="result-label">Total Labels:</span>
+                    <span class="result-value">{{ result.total_labels }}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Total Pages:</span>
+                    <span class="result-value">{{ result.total_pages }}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Filename:</span>
+                    <span class="result-value">{{ result.filename }}</span>
+                </div>
+                <button @click="downloadFile" class="btn btn-download">
+                    📥 Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    apiUrl: 'http://localhost:8000',
+                    form: {
+                        startCode: 10001,
+                        endCode: 10500,
+                        codeType: 'barcode',
+                        labelFormat: 'avery5160',
+                        prefix: '',
+                        suffix: '',
+                        pageSize: 'letter'
+                    },
+                    formats: [],
+                    loading: false,
+                    result: null,
+                    alert: {
+                        show: false,
+                        type: 'info',
+                        message: ''
+                    }
+                }
+            },
+            computed: {
+                previewCode() {
+                    if (!this.form.startCode) return '';
+                    return `${this.form.prefix}${this.form.startCode}${this.form.suffix}`;
+                }
+            },
+            mounted() {
+                this.loadFormats();
+            },
+            methods: {
+                async loadFormats() {
+                    try {
+                        const response = await axios.get(`${this.apiUrl}/api/formats`);
+                        this.formats = response.data;
+                    } catch (error) {
+                        this.showAlert('error', 'Failed to load label formats');
+                        console.error(error);
+                    }
+                },
+                async generateLabels() {
+                    // Validation
+                    if (this.form.endCode < this.form.startCode) {
+                        this.showAlert('error', 'End code must be greater than or equal to start code');
+                        return;
+                    }
+
+                    const totalLabels = this.form.endCode - this.form.startCode + 1;
+                    if (totalLabels > 10000) {
+                        this.showAlert('error', 'Maximum 10,000 labels per generation');
+                        return;
+                    }
+
+                    this.loading = true;
+                    this.result = null;
+
+                    try {
+                        const payload = {
+                            start_code: this.form.startCode,
+                            end_code: this.form.endCode,
+                            code_type: this.form.codeType,
+                            label_format: this.form.labelFormat,
+                            prefix: this.form.prefix,
+                            suffix: this.form.suffix,
+                            page_size: this.form.pageSize
+                        };
+
+                        const response = await axios.post(
+                            `${this.apiUrl}/api/generate`,
+                            payload
+                        );
+
+                        this.result = response.data;
+                        this.showAlert('success', 'Labels generated successfully! Click download button below.');
+                        
+                    } catch (error) {
+                        const message = error.response?.data?.detail || 'Failed to generate labels';
+                        this.showAlert('error', message);
+                        console.error(error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                downloadFile() {
+                    if (this.result && this.result.download_url) {
+                        window.open(`${this.apiUrl}${this.result.download_url}`, '_blank');
+                    }
+                },
+                showAlert(type, message) {
+                    this.alert = {
+                        show: true,
+                        type: type,
+                        message: message
+                    };
+
+                    setTimeout(() => {
+                        this.alert.show = false;
+                    }, 5000);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
