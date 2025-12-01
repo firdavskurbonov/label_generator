@@ -55,7 +55,8 @@ class LabelRequest(BaseModel):
     @classmethod
     def validate_range(cls, v, info):
         if 'start_code' in info.data and v < info.data['start_code']:
-            raise ValueError('End code must be greater than or equal to start code')
+            raise ValueError(
+                'End code must be greater than or equal to start code')
         return v
 
     @field_validator('prefix', 'suffix')
@@ -182,10 +183,10 @@ async def generate_labels(request: LabelRequest):
 async def download_file(filename: str):
     """Download generated PDF file"""
     filepath = os.path.join(OUTPUT_DIR, filename)
-    
+
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     return FileResponse(
         filepath,
         media_type="application/pdf",
@@ -200,7 +201,7 @@ async def cleanup_old_files():
         import time
         current_time = time.time()
         deleted_count = 0
-        
+
         for filename in os.listdir(OUTPUT_DIR):
             filepath = os.path.join(OUTPUT_DIR, filename)
             if os.path.isfile(filepath):
@@ -209,7 +210,7 @@ async def cleanup_old_files():
                 if file_age > 3600:
                     os.remove(filepath)
                     deleted_count += 1
-        
+
         return {
             "success": True,
             "deleted_files": deleted_count,
@@ -219,6 +220,6 @@ async def cleanup_old_files():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=10000)
