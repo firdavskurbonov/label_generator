@@ -23,7 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     # In production, specify your frontend URL
     allow_origins=[
-        "https://label-generator-je72.onrender.com, https://label-generator-front.onrender.com"],
+        "https://label-generator-front.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -222,6 +222,6 @@ async def cleanup_old_files():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=10000)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
