@@ -22,8 +22,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     # In production, specify your frontend URL
-    allow_origins=["*"],  # https://label-generator-front.onrender.com
-    allow_credentials=False,
+    allow_origins=[
+        "https://label-generator-je72.onrender.com, https://label-generator-front.onrender.com"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
